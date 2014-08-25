@@ -18,7 +18,7 @@ class MetaDash.Models.Client extends MetaDash.Models.SensuBaseModel
 
   getEvents: ->
     @getServer().events.filter( (event) =>
-      @get("name") == event.get("client")
+      @get("name") == event.get("client").name
     )
 
   getChecks: ->
@@ -73,7 +73,7 @@ class MetaDash.Models.Client extends MetaDash.Models.SensuBaseModel
 
       for e in @getEvents()
         for check in checks
-            check.statusName = e.getStatusName() if check.name == e.get("check")
+            check.statusName = e.getStatusName() if check.name == e.get("check").name
       json.checks = checks
 
     json

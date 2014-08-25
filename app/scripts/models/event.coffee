@@ -11,11 +11,11 @@ class MetaDash.Models.Event extends MetaDash.Models.SensuBaseModel
     issued: "0000-00-00T00:00:00Z"
 
   initialize: ->
-    @set id: "#{@get("client")}/#{@get("check")}"
+    @set id: "#{@get("client")}/#{@get("check").name}"
     @set
-      client_silence_path: "silence/#{@get('client')}"
+      client_silence_path: "silence/#{@get('client').name}"
       silence_path: "silence/#{@get('id')}"
-      check_silence_path: "silence/all/#{@get('check')}"
+      check_silence_path: "silence/all/#{@get('check').name}"
 
     @listenTo(@getServer().stashes, "reset", @setSilencing)
     @listenTo(@getServer().stashes, "add", @setSilencing)
@@ -40,7 +40,7 @@ class MetaDash.Models.Event extends MetaDash.Models.SensuBaseModel
     @get("event_silenced") || @get("client_silenced") || @get("check_silenced")
 
   getStatusName:  ->
-    switch @get("status")
+    switch @get("check").status
       when 1 then "warning"
       when 2 then "critical"
       else "unknown"
@@ -49,10 +49,12 @@ class MetaDash.Models.Event extends MetaDash.Models.SensuBaseModel
     new Date(@get('issued') * 1000)
 
   getClient: ->
-    @getServer().clients.findWhere({name: @get('client')})
+    # @get("client")
+    @getServer().clients.findWhere({name: @get('client').name})
 
   getCheck: ->
-    @getServer().checks.findWhere({name: @get('check')})
+    # @get("check")
+    @getServer().checks.findWhere({name: @get('check').name})
 
   # getStashes: ->
   #   @getServer().stashes.filter( (s) =>
@@ -127,17 +129,17 @@ class MetaDash.Collections.Events extends MetaDash.Collections.SensuBaseCollecti
           return val if _.isArray(val)
           return [val] if _.isString(val)
           return []
-        anyMatchCheck = (param, check) ->
-          _.any(toArray(param), (p) -> check.match(new RegExp(p)))
+        anyMatchCheck = (param, checkName) ->
+          _.any(toArray(param), (p) -> checkName.match(new RegExp(p)))
         anyMatchStatus = (param, status) ->
           _.any(toArray(param), (p) -> parseInt(p) == status)
 
         if f.silenced?
           return false unless (f.silenced!="0") == event.isSilenced()
         if f.status?
-          return false unless anyMatchStatus(toArray(f.status), event.get('status'))
+          return false unless anyMatchStatus(toArray(f.status), event.get('check').status)
         if f.filter?
-          return false unless anyMatchCheck(toArray(f.filter), event.get('check'))
+          return false unless anyMatchCheck(toArray(f.filter), event.get('check').name)
         if f.ignore?
-          return false if anyMatchCheck(toArray(f.ignore), event.get('check'))
+          return false if anyMatchCheck(toArray(f.ignore), event.get('check').name)
         return true

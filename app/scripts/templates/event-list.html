@@ -5,7 +5,7 @@
         <% if(event.client_silenced) { %>
           <span class="glyphicon glyphicon-volume-off"></span>
         <% } %>
-        {{event.client}}
+        {{event.client.name}}
       </div>
       <div class="check col col-md-3">
         <% if(event.event_silenced) { %>
@@ -14,10 +14,10 @@
         <% if(event.flapping) { %>
           <span class="glyphicon glyphicon-random"></span>
         <% } %>
-        {{event.check}}
+        {{event.check.name}}
       </div>
       <div class="output col col-md-6" title="{{event.occurrences}}">
-        {{event.output}}
+        {{event.check.output}}
       </div>
     </div>
   </div>
